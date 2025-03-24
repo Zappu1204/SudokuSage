@@ -21,15 +21,15 @@ class StatsViewModel extends ChangeNotifier {
   int get streakDays => _streakDays;
   int? get lastPlayed => _lastPlayed;
   
-  // Calculate win rate as a percentage
-  double get winRate => _gamesPlayed > 0 ? (_gamesWon / _gamesPlayed) * 100 : 0.0;
+  // Get win rate as a percentage
+  double get winRate => _gamesPlayed > 0 ? (_gamesWon / _gamesPlayed) * 100 : 0;
   
   // Get best time for a specific grid size and difficulty
   int? getBestTime(int size, String difficulty) {
     return _bestTimes['$size']?[difficulty];
   }
   
-  // Format time in minutes and seconds
+  // Format time in minutes:seconds
   String formatTime(int? seconds) {
     if (seconds == null) {
       return "--:--";
@@ -57,11 +57,11 @@ class StatsViewModel extends ChangeNotifier {
       
       bestTimesData.forEach((sizeKey, difficulties) {
         if (difficulties is Map) {
-          difficulties.forEach((difficultyKey, time) {
-            if (_bestTimes.containsKey(sizeKey) && 
-                _bestTimes[sizeKey]!.containsKey(difficultyKey)) {
-              _bestTimes[sizeKey]![difficultyKey] = time;
-            }
+          Map<String, dynamic> difficultyMap = difficulties as Map<String, dynamic>;
+          
+          _bestTimes[sizeKey] = {};
+          difficultyMap.forEach((difficultyKey, time) {
+            _bestTimes[sizeKey]![difficultyKey] = time as int?;
           });
         }
       });
@@ -83,21 +83,15 @@ class StatsViewModel extends ChangeNotifier {
     _streakDays = 0;
     _lastPlayed = null;
     
-    Map<String, dynamic> stats = {
+    notifyListeners();
+    
+    return await StorageManager.saveStats({
       'gamesPlayed': _gamesPlayed,
       'gamesWon': _gamesWon,
       'bestTimes': _bestTimes,
       'hintsUsed': _hintsUsed,
       'streakDays': _streakDays,
       'lastPlayed': _lastPlayed,
-    };
-    
-    bool success = await StorageManager.saveStats(stats);
-    
-    if (success) {
-      notifyListeners();
-    }
-    
-    return success;
+    });
   }
 }

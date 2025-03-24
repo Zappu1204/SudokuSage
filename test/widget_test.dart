@@ -7,24 +7,33 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:provider/provider.dart';
 import 'package:sudoku_master/main.dart';
+import 'package:sudoku_master/viewmodels/game_viewmodel.dart';
+import 'package:sudoku_master/viewmodels/settings_viewmodel.dart';
+import 'package:sudoku_master/viewmodels/stats_viewmodel.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('Sudoku app smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<SettingsViewModel>(
+            create: (_) => SettingsViewModel(),
+          ),
+          ChangeNotifierProvider<GameViewModel>(
+            create: (_) => GameViewModel(),
+          ),
+          ChangeNotifierProvider<StatsViewModel>(
+            create: (_) => StatsViewModel(),
+          ),
+        ],
+        child: const SudokuMasterApp(),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that the app title appears
+    expect(find.text('Sudoku Master'), findsOneWidget);
   });
 }
